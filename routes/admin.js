@@ -1,7 +1,8 @@
+// Admin routes
+
 import express from 'express';
 import Post from '../models/Post.js';
 import adminAuth from '../middleware/adminAuth.js';
-import { getStorage } from '../services/storage.js';
 import upload from '../middleware/upload.js';
 import fs from 'fs/promises';
 import path from 'path';
@@ -16,7 +17,6 @@ const __dirname = dirname(__filename);
 // Helper function to delete a file
 async function deleteFile(filepath) {
     try {
-        // Remove the leading slash and 'uploads' from the path
         const relativePath = filepath.replace(/^\/uploads\//, '');
         const absolutePath = path.join(__dirname, '../public/uploads', relativePath);
         await fs.unlink(absolutePath);
@@ -51,7 +51,7 @@ router.post('/logout', (req, res) => {
     res.redirect('/admin/login');
 });
 
-// Protect all routes after this point
+// Auth middleware to protect routes
 router.use(adminAuth);
 
 // Protected admin routes
@@ -78,11 +78,11 @@ router.get('/posts/new', (req, res) => {
 
 router.post('/posts', adminAuth, async (req, res) => {
     try {
-        console.log('Received post data:', req.body); // Debug log
+        console.log('Received post data:', req.body); 
         
-        // Convert comma-separated string to array
+        
         const images = req.body.images ? req.body.images.split(',') : [];
-        console.log('Processed images:', images); // Debug log
+        console.log('Processed images:', images); 
 
         const post = new Post({
             title: req.body.title,
@@ -92,7 +92,7 @@ router.post('/posts', adminAuth, async (req, res) => {
             images: images
         });
 
-        console.log('Created post object:', post); // Debug log
+        console.log('Created post object:', post);
         await post.save();
         res.redirect('/admin/dashboard');
     } catch (error) {

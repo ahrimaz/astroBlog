@@ -1,3 +1,5 @@
+// Storage service
+
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import fs from 'fs/promises';
@@ -30,22 +32,22 @@ class LocalStorage {
     }
 }
 
-// Example cloud storage implementation (AWS S3)
+// Future AWS S3 or other service
 class S3Storage {
     constructor() {
-        // Initialize S3 client here
+        // Initialize S3 client
         if (process.env.AWS_ACCESS_KEY_ID) {
             console.log('AWS S3 storage initialized');
         }
     }
 
     async save(file) {
-        // Implement S3 upload logic here
+        // Implement S3 upload logic
         throw new Error('S3 storage not implemented');
     }
 
     async delete(filename) {
-        // Implement S3 delete logic here
+        // Implement S3 delete logic
         throw new Error('S3 storage not implemented');
     }
 }

@@ -1,3 +1,5 @@
+// Middleware to handle file uploads
+
 import multer from 'multer';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';

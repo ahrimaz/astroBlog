@@ -1,3 +1,5 @@
+// Posts routes
+
 import express from 'express';
 import Post from '../models/Post.js';
 import adminAuth from '../middleware/adminAuth.js';
@@ -55,12 +57,11 @@ router.put('/:slug', adminAuth, async (req, res) => {
                 title: req.body.title,
                 content: req.body.content,
                 isPublished: req.body.isPublished,
-                // Only update slug if title is changed
                 ...(req.body.title && {
                     slug: req.body.title.toLowerCase().replace(/[^a-zA-Z0-9]/g, '-')
                 })
             },
-            { new: true } // Return updated post
+            { new: true }
         );
 
         if (!post) {
