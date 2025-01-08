@@ -8,6 +8,7 @@ import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import expressLayouts from 'express-ejs-layouts';
+import methodOverride from 'method-override';
 
 // Import routes
 import publicRouter from './routes/public.js';
@@ -22,9 +23,11 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static('public'));
+app.use('/tinymce', express.static(join(__dirname, 'node_modules/tinymce')));
+app.use(methodOverride('_method'));
 
 // View engine setup
 app.set('view engine', 'ejs');

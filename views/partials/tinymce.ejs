@@ -1,0 +1,26 @@
+<!-- Include TinyMCE -->
+<script src="/tinymce/tinymce.min.js"></script>
+
+<!-- Initialize TinyMCE -->
+<script>
+    // Wait for the DOM to be ready
+    document.addEventListener('DOMContentLoaded', function() {
+        tinymce.init({
+            selector: '#content',  // This targets your textarea
+            plugins: [
+                'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+                'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                'insertdatetime', 'media', 'table', 'help', 'wordcount'
+            ],
+            toolbar: 'undo redo | blocks | ' +
+                'bold italic backcolor | alignleft aligncenter ' +
+                'alignright alignjustify | bullist numlist outdent indent | ' +
+                'removeformat | image | help',
+            images_upload_url: '/admin/upload-image',  // Your image upload endpoint
+            automatic_uploads: true,
+            images_reuse_filename: true,
+            height: 500,
+            menubar: false
+        });
+    });
+</script> 

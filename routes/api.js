@@ -1,35 +1,21 @@
 // API routes
 
 import express from 'express';
-import Post from '../models/Post.js';
+import PostController from '../controllers/postController.js';
 import adminAuth from '../middleware/adminAuth.js';
 
 const router = express.Router();
 
-// Debug route
-router.get('/debug/posts', adminAuth, async (req, res) => {
-    try {
-        const posts = await Post.find({});
-        res.json(posts);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
+// Public API endpoints
+router.get('/posts', PostController.apiListPosts);
+router.get('/posts/:slug', PostController.apiGetPost);
 
-// Create post
-router.post('/posts', adminAuth, async (req, res) => {
-    try {
-        const post = new Post({
-            title: req.body.title,
-            content: req.body.content,
-            slug: req.body.title.toLowerCase().replace(/[^a-zA-Z0-9]+/g, '-'),
-            isPublished: req.body.isPublished || false
-        });
-        await post.save();
-        res.status(201).json(post);
-    } catch (error) {
-        res.status(400).json({ error: error.message });
-    }
-});
+// Protected API endpoints
+router.post('/posts', adminAuth, PostController.apiCreatePost);
+router.put('/posts/:slug', adminAuth, PostController.apiUpdatePost);
+router.delete('/posts/:slug', adminAuth, PostController.apiDeletePost);
+
+// Debug endpoint
+router.get('/debug/posts', adminAuth, PostController.apiDebugListAllPosts);
 
 export default router; 

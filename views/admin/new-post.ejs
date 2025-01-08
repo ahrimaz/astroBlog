@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>New Post</title>
     <link href="/css/output.css" rel="stylesheet">
+    <%- include('../partials/tinymce') %>
 </head>
 <body class="bg-gray-50">
     <nav class="bg-gray-800 text-white">
@@ -17,34 +18,20 @@
     <main class="max-w-4xl mx-auto px-4 py-8">
         <form action="/admin/posts" method="POST" class="space-y-6 bg-white shadow rounded-lg p-6">
             <div>
-                <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
-                <input type="text" name="title" id="title" required
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-            </div>
-
-            <div class="mb-6">
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Add Images
-                </label>
-                <div class="space-y-4">
-                    <div class="flex items-center space-x-4">
-                        <button type="button" 
-                                id="uploadButton"
-                                class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300">
-                            Upload Image
-                        </button>
-                        <span id="uploadStatus" class="text-sm text-gray-500"></span>
-                    </div>
-                    <div id="imagePreview" class="grid grid-cols-2 gap-4">
-                        <!-- Image previews will be added here -->
-                    </div>
-                </div>
+                <label for="title" class="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                <input type="text" 
+                    name="title" 
+                    id="title" 
+                    required
+                    placeholder="Enter post title..."
+                    class="title-input">
             </div>
 
             <div>
                 <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
-                <textarea name="content" id="content" rows="12" required
-                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+                <textarea name="content" id="content" required
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                </textarea>
             </div>
 
             <div class="flex items-center">
@@ -55,7 +42,6 @@
                 </label>
             </div>
 
-            <!-- Hidden input for image URLs -->
             <input type="hidden" name="images" id="imageUrls">
 
             <div class="flex justify-end">
@@ -70,69 +56,5 @@
             </div>
         </form>
     </main>
-
-    <script>
-        let uploadedImages = [];
-
-        document.getElementById('uploadButton').addEventListener('click', async () => {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            
-            input.onchange = async () => {
-                const file = input.files[0];
-                if (!file) return;
-
-                const formData = new FormData();
-                formData.append('image', file);
-
-                const status = document.getElementById('uploadStatus');
-                status.textContent = 'Uploading...';
-
-                try {
-                    const response = await fetch('/admin/upload', {
-                        method: 'POST',
-                        body: formData
-                    });
-
-                    if (!response.ok) throw new Error('Upload failed');
-
-                    const data = await response.json();
-                    uploadedImages.push(data.url);
-                    
-                    // Update hidden input
-                    document.getElementById('imageUrls').value = uploadedImages.join(',');
-                    
-                    // Create image preview
-                    const preview = document.createElement('div');
-                    preview.className = 'relative';
-                    preview.innerHTML = `
-                        <img src="${data.url}" alt="Uploaded image" class="w-full h-48 object-cover rounded-lg">
-                        <button type="button" class="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-                    `;
-
-                    document.getElementById('imagePreview').appendChild(preview);
-                    status.textContent = 'Upload successful!';
-
-                    // Add click handler for remove button
-                    preview.querySelector('button').onclick = () => {
-                        preview.remove();
-                        uploadedImages = uploadedImages.filter(url => url !== data.url);
-                        document.getElementById('imageUrls').value = uploadedImages.join(',');
-                    };
-
-                } catch (error) {
-                    console.error('Upload error:', error);
-                    status.textContent = 'Upload failed: ' + error.message;
-                }
-            };
-
-            input.click();
-        });
-    </script>
 </body>
 </html> 

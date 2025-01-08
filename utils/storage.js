@@ -3,6 +3,7 @@
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import fs from 'fs/promises';
+import path from 'path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -60,5 +61,25 @@ export function getStorage() {
         case 'local':
         default:
             return new LocalStorage();
+    }
+}
+
+export async function deleteFile(imageUrl) {
+    try {
+        if (!imageUrl) return;
+
+        // Get the filename from the URL
+        const filename = path.basename(imageUrl);
+        const filepath = path.join('public/uploads', filename);
+
+        // Check if file exists before trying to delete
+        await fs.access(filepath);
+        await fs.unlink(filepath);
+    } catch (error) {
+        console.error('Error deleting file:', error);
+        // Don't throw error if file doesn't exist
+        if (error.code !== 'ENOENT') {
+            throw error;
+        }
     }
 } 

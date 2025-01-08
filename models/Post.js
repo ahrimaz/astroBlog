@@ -26,12 +26,18 @@ const postSchema = new mongoose.Schema({
         default: false
     }
 }, {
-    timestamps: true  // This will automatically add createdAt and updatedAt fields
+    timestamps: true
 });
 
-// Create a compound index for efficient querying
 postSchema.index({ slug: 1, isPublished: 1 });
 
-const Post = mongoose.model('Post', postSchema);
+postSchema.methods.getPreview = function(length = 200) {
+    // Strip HTML tags and get preview
+    return this.content
+        .replace(/<[^>]*>/g, '')  // Remove HTML tags
+        .replace(/\s+/g, ' ')     // Normalize whitespace
+        .trim()                   // Remove leading/trailing whitespace
+        .substring(0, length) + '...';
+};
 
-export default Post;
+export default mongoose.model('Post', postSchema);
