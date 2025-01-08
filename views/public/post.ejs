@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= post.title %></title>
+    <link href="/css/output.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+    <div class="max-w-4xl mx-auto px-4 py-8">
+        <a href="/" class="text-gray-600 hover:text-gray-900 mb-8 inline-block">
+            ← Back to posts
+        </a>
+
+        <article class="bg-white rounded-lg shadow-sm p-8">
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">
+                <%= post.title %>
+            </h1>
+            
+            <div class="text-gray-500 mb-8">
+                <%= new Date(post.createdAt).toLocaleDateString() %>
+            </div>
+
+            <% if (post.images && post.images.length > 0) { %>
+                <div class="mb-8 space-y-4">
+                    <% post.images.forEach(image => { %>
+                        <img src="<%= image %>" alt="Post image" class="max-w-full h-auto rounded-lg">
+                    <% }); %>
+                </div>
+            <% } %>
+            
+            <div class="prose max-w-none text-gray-600">
+                <%= post.content %>
+            </div>
+        </article>
+    </div>
+</body>
+</html>

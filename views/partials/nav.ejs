@@ -1,0 +1,67 @@
+<nav class="bg-white border-b border-gray-100">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class="flex justify-between h-14">
+            <!-- Left side - Logo/Site name -->
+            <div class="flex items-center">
+                <a href="/" class="text-gray-900 font-semibold">
+                    Your Blog
+                </a>
+                
+                <!-- Navigation Links -->
+                <div class="hidden md:flex ml-8 space-x-6">
+                    <a href="/" class="text-sm text-gray-500 hover:text-gray-900">Home</a>
+                    <a href="/about" class="text-sm text-gray-500 hover:text-gray-900">About</a>
+                    <a href="/archive" class="text-sm text-gray-500 hover:text-gray-900">Archive</a>
+                </div>
+            </div>
+
+            <!-- Right side - Admin link if logged in -->
+            <div class="flex items-center space-x-4">
+                <% if (locals.isAdmin) { %>
+                    <a href="/admin/dashboard" class="text-sm text-gray-500 hover:text-gray-900">
+                        Dashboard
+                    </a>
+                <% } %>
+                
+                <!-- Mobile menu button -->
+                <button type="button" 
+                        id="mobile-menu-button"
+                        class="md:hidden text-gray-500 hover:text-gray-900">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile menu -->
+    <div class="hidden md:hidden" id="mobile-menu">
+        <div class="px-2 pt-2 pb-3 space-y-1 border-t border-gray-100">
+            <a href="/" class="block px-3 py-2 text-sm text-gray-500 hover:text-gray-900">
+                Home
+            </a>
+            <a href="/about" class="block px-3 py-2 text-sm text-gray-500 hover:text-gray-900">
+                About
+            </a>
+            <a href="/archive" class="block px-3 py-2 text-sm text-gray-500 hover:text-gray-900">
+                Archive
+            </a>
+            <% if (locals.isAdmin) { %>
+                <a href="/admin/dashboard" class="block px-3 py-2 text-sm text-gray-500 hover:text-gray-900">
+                    Dashboard
+                </a>
+            <% } %>
+        </div>
+    </div>
+</nav>
+
+<script>
+    // Mobile menu toggle
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+
+    mobileMenuButton.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+    });
+</script> 

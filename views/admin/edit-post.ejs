@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Post</title>
+    <link href="/css/output.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+    <nav class="bg-gray-800 text-white">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <h1 class="text-xl font-bold">Edit Post</h1>
+            <a href="/admin/dashboard" class="text-sm text-gray-300 hover:text-white">Back to Dashboard</a>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto px-4 py-8">
+        <form action="/admin/posts/<%= post._id %>?_method=PUT" method="POST" class="space-y-6 bg-white shadow rounded-lg p-6">
+            <div>
+                <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
+                <input type="text" name="title" id="title" required
+                    value="<%= post.title %>"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            </div>
+
+            <div>
+                <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
+                <textarea name="content" id="content" rows="12" required
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"><%= post.content %></textarea>
+            </div>
+
+            <div class="flex items-center">
+                <input type="checkbox" name="isPublished" id="isPublished"
+                    <%= post.isPublished ? 'checked' : '' %>
+                    class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                <label for="isPublished" class="ml-2 block text-sm text-gray-900">
+                    Published
+                </label>
+            </div>
+
+            <div class="flex justify-end">
+                <a href="/admin/dashboard" 
+                    class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 mr-4">
+                    Cancel
+                </a>
+                <button type="submit" 
+                    class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                    Update Post
+                </button>
+            </div>
+        </form>
+    </main>
+</body>
+</html> 
