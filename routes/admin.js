@@ -3,6 +3,8 @@
 import express from 'express';
 import PostController from '../controllers/postController.js';
 import adminAuth from '../middleware/adminAuth.js';
+import upload from '../middleware/upload.js';
+import { optimizeImage } from '../middleware/upload.js';
 
 const router = express.Router();
 
@@ -36,6 +38,29 @@ router.put('/posts/:id', PostController.updatePost);
 router.delete('/posts/:id', PostController.deletePost);
 
 // Image handling
-router.post('/upload', PostController.uploadMiddleware(), PostController.handleImageUpload);
+router.post('/upload', upload.single('image'), optimizeImage, PostController.handleImageUpload);
+
+// Add this route
+router.post('/upload-image', upload.single('file'), optimizeImage, (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded' });
+        }
+        
+        // Ensure we're sending JSON response
+        res.setHeader('Content-Type', 'application/json');
+        
+        // Use the correct path format
+        const location = `/uploads/${req.file.filename}`;
+        res.json({
+            location: location
+        });
+    } catch (error) {
+        console.error('Image upload error:', error);
+        res.status(500).json({
+            error: 'Failed to upload image'
+        });
+    }
+});
 
 export default router;

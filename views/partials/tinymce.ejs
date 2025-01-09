@@ -16,11 +16,44 @@
                 'bold italic backcolor | alignleft aligncenter ' +
                 'alignright alignjustify | bullist numlist outdent indent | ' +
                 'removeformat | image | help',
-            images_upload_url: '/admin/upload-image',  // Your image upload endpoint
+            images_upload_handler: (blobInfo) => {
+                return new Promise((resolve, reject) => {
+                    const formData = new FormData();
+                    formData.append('file', blobInfo.blob(), blobInfo.filename());
+
+                    fetch('/admin/upload-image', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.location) {
+                            const imageUrlsInput = document.getElementById('imageUrls');
+                            const currentUrls = imageUrlsInput.value ? imageUrlsInput.value.split(',') : [];
+                            currentUrls.push(result.location);
+                            imageUrlsInput.value = currentUrls.join(',');
+                            
+                            resolve(result.location);
+                        } else {
+                            reject('Upload failed');
+                        }
+                    })
+                    .catch(error => {
+                        reject('Upload failed: ' + error);
+                    });
+                });
+            },
             automatic_uploads: true,
-            images_reuse_filename: true,
+            relative_urls: false,
+            remove_script_host: false,
+            convert_urls: true,
             height: 500,
-            menubar: false
+            menubar: false,
+            setup: function(editor) {
+                editor.on('init', function() {
+                    console.log('Editor initialized');
+                });
+            }
         });
     });
 </script> 

@@ -1,6 +1,5 @@
 import Post from '../models/Post.js';
 import { deleteFile } from '../utils/storage.js';
-import upload from '../middleware/upload.js';
 
 export default class PostController {
     // Public routes
@@ -35,23 +34,24 @@ export default class PostController {
 
     static async showPost(req, res) {
         try {
-            const post = await Post.findOne({ 
-                slug: req.params.slug,
-                isPublished: true 
-            });
-
+            const post = await Post.findOne({ slug: req.params.slug });
             if (!post) {
                 return res.status(404).render('error', {
-                    title: 'Not Found',
+                    title: 'Error',
                     message: 'Post not found'
                 });
             }
 
-            console.log('Post images:', post.images);
+            // Restore the original console log
+            console.log('Post data:', {
+                title: post.title,
+                images: post.images,
+                content: post.content.substring(0, 100) + '...'
+            });
 
             res.render('public/post', {
                 title: post.title,
-                post
+                post: post
             });
         } catch (error) {
             res.status(500).render('error', {
@@ -164,7 +164,8 @@ export default class PostController {
                     title: req.body.title,
                     content: req.body.content,
                     slug: req.body.title.toLowerCase().replace(/[^a-zA-Z0-9]+/g, '-'),
-                    isPublished: req.body.isPublished === 'on'
+                    isPublished: req.body.isPublished === 'on',
+                    images: req.body.images ? req.body.images.split(',') : []
                 },
                 { new: true }
             );

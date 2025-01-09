@@ -20,14 +20,6 @@
             <div class="text-gray-500 mb-8">
                 <%= new Date(post.createdAt).toLocaleDateString() %>
             </div>
-
-            <% if (post.images && post.images.length > 0) { %>
-                <div class="mb-8 space-y-4">
-                    <% post.images.forEach(image => { %>
-                        <img src="<%= image %>" alt="Post image" class="max-w-full h-auto rounded-lg">
-                    <% }); %>
-                </div>
-            <% } %>
             
             <div class="prose max-w-none text-gray-600">
                 <%- post.content %>
