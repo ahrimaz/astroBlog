@@ -1,0 +1,21 @@
+<div class="max-w-lg mx-auto px-4 py-16">
+    <div class="bg-white rounded-lg shadow-sm p-8 text-center">
+        <% if (message.includes('successfully')) { %>
+            <div class="text-green-500 text-5xl mb-4">✓</div>
+            <h1 class="text-2xl font-bold text-gray-900 mb-4">
+                Thank you for verifying your email!
+            </h1>
+            <p class="text-gray-600">
+                You're now subscribed to our newsletter. We'll keep you updated with our latest posts and news.
+            </p>
+        <% } else { %>
+            <div class="text-blue-500 text-5xl mb-4">ℹ</div>
+            <h1 class="text-2xl font-bold text-gray-900 mb-4">
+                <%= message %>
+            </h1>
+            <p class="text-gray-600">
+                You can safely close this page.
+            </p>
+        <% } %>
+    </div>
+</div>

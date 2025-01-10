@@ -3,6 +3,7 @@
 import express from 'express';
 import PostController from '../controllers/postController.js';
 import adminAuth from '../middleware/adminAuth.js';
+import NewsletterController from '../controllers/NewsletterController.js';
 
 const router = express.Router();
 
@@ -17,5 +18,10 @@ router.delete('/posts/:slug', adminAuth, PostController.apiDeletePost);
 
 // Debug endpoint
 router.get('/debug/posts', adminAuth, PostController.apiDebugListAllPosts);
+
+// Newsletter endpoints
+router.post('/newsletter/subscribe', NewsletterController.subscribe);
+router.get('/newsletter/verify/:token', NewsletterController.verify);
+router.get('/newsletter/unsubscribe', NewsletterController.unsubscribe);
 
 export default router; 

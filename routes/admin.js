@@ -5,10 +5,12 @@ import PostController from '../controllers/postController.js';
 import adminAuth from '../middleware/adminAuth.js';
 import upload from '../middleware/upload.js';
 import { optimizeImage } from '../middleware/upload.js';
+import NewsletterController from '../controllers/NewsletterController.js';
+import Post from '../models/Post.js';
 
 const router = express.Router();
 
-// Add this BEFORE the adminAuth middleware
+// BEFORE the adminAuth middleware
 router.get('/login', (req, res) => {
     res.render('admin/login', { title: 'Admin Login' });
 });
@@ -30,7 +32,7 @@ router.post('/login', (req, res) => {
 router.use(adminAuth);
 
 // Dashboard and post management
-router.get('/dashboard', PostController.listAllPosts);
+router.get('/dashboard', NewsletterController.adminDashboard);
 router.get('/posts/new', PostController.showNewPostForm);
 router.post('/posts', PostController.createPost);
 router.get('/posts/:id/edit', PostController.showEditForm);
@@ -39,15 +41,13 @@ router.delete('/posts/:id', PostController.deletePost);
 
 // Image handling
 router.post('/upload', upload.single('image'), optimizeImage, PostController.handleImageUpload);
-
-// Add this route
 router.post('/upload-image', upload.single('file'), optimizeImage, (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ error: 'No file uploaded' });
         }
         
-        // Ensure we're sending JSON response
+        // Send JSON response
         res.setHeader('Content-Type', 'application/json');
         
         // Use the correct path format
@@ -62,5 +62,11 @@ router.post('/upload-image', upload.single('file'), optimizeImage, (req, res) =>
         });
     }
 });
+
+// Newsletter routes
+router.get('/newsletter', NewsletterController.adminListSubscribers);
+router.get('/newsletter/send', NewsletterController.adminSendNewsletterGet);
+router.post('/newsletter/send', NewsletterController.adminSendNewsletterPost);
+router.delete('/newsletter/subscribers/:id', NewsletterController.adminRemoveSubscriber);
 
 export default router;
