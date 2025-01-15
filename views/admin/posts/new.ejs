@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="/css/output.css" rel="stylesheet">
+    <%- include('../../partials/tinymce') %>
+</head>
+<body class="bg-gray-50">
+    <%- include('../../partials/admin-nav') %>
+
+    <main class="max-w-4xl mx-auto px-4 py-8">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-2xl font-bold text-gray-900">Create New Post</h1>
+        </div>
+
+        <form id="postForm" class="space-y-6 bg-white shadow rounded-lg p-6">
+            <div>
+                <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
+                <input type="text" 
+                       id="title" 
+                       name="title" 
+                       required
+                       placeholder="Enter post title..."
+                       class="title-input">
+            </div>
+
+            <div>
+                <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
+                <textarea id="content" name="content"></textarea>
+            </div>
+
+            <div class="flex items-center">
+                <input type="checkbox" 
+                       id="isPublished" 
+                       name="isPublished"
+                       class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                <label for="isPublished" class="ml-2 block text-sm text-gray-900">
+                    Publish immediately
+                </label>
+            </div>
+
+            <div class="flex justify-end space-x-4">
+                <a href="/admin/posts" 
+                   class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                    Cancel
+                </a>
+                <button type="submit" 
+                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    Create Post
+                </button>
+            </div>
+        </form>
+    </main>
+
+    <script>
+    document.getElementById('postForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        try {
+            const response = await fetch('/admin/posts', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    title: document.getElementById('title').value,
+                    content: tinymce.get('content').getContent(),
+                    isPublished: document.getElementById('isPublished').checked
+                })
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.error || 'Failed to create post');
+            }
+
+            window.location.href = '/admin/posts';
+        } catch (error) {
+            console.error('Error:', error);
+            alert(error.message || 'Failed to create post');
+        }
+    });
+    </script>
+</body>
+</html> 

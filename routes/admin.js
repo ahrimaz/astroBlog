@@ -2,21 +2,17 @@
 
 import express from 'express';
 import PostController from '../controllers/postController.js';
-import adminAuth from '../middleware/adminAuth.js';
-import upload from '../middleware/upload.js';
-import { optimizeImage } from '../middleware/upload.js';
 import NewsletterController from '../controllers/NewsletterController.js';
-import Post from '../models/Post.js';
+import { upload, optimizeImage } from '../middleware/upload.js';
+import adminAuth from '../middleware/adminAuth.js';
+import DashboardController from '../controllers/DashboardController.js';
+import multer from 'multer';
 
 const router = express.Router();
 
-// BEFORE the adminAuth middleware
-router.get('/login', (req, res) => {
-    res.render('admin/login', { title: 'Admin Login' });
-});
-
+// Auth routes (before adminAuth)
+router.get('/login', (req, res) => res.render('admin/login', { title: 'Admin Login' }));
 router.post('/login', (req, res) => {
-    // Check credentials
     if (req.body.password === process.env.ADMIN_PASSWORD) {
         req.session.isAdmin = true;
         res.redirect('/admin/dashboard');
@@ -27,46 +23,89 @@ router.post('/login', (req, res) => {
         });
     }
 });
+router.get('/logout', (req, res) => {
+    req.session.destroy();
+    res.redirect('/');
+});
 
-// Protected routes below
+// Protected routes
 router.use(adminAuth);
 
-// Dashboard and post management
-router.get('/dashboard', NewsletterController.adminDashboard);
-router.get('/posts/new', PostController.showNewPostForm);
-router.post('/posts', PostController.createPost);
-router.get('/posts/:id/edit', PostController.showEditForm);
-router.put('/posts/:id', PostController.updatePost);
-router.delete('/posts/:id', PostController.deletePost);
+// Dashboard
+router.get('/dashboard', DashboardController.show);
 
-// Image handling
-router.post('/upload', upload.single('image'), optimizeImage, PostController.handleImageUpload);
-router.post('/upload-image', upload.single('file'), optimizeImage, (req, res) => {
+// Posts management
+router.get('/posts', PostController.index);
+router.get('/posts/new', PostController.new);
+router.post('/posts', PostController.create);
+router.get('/posts/:id/edit', PostController.edit);
+router.put('/posts/:id', PostController.update);
+router.delete('/posts/:id', PostController.delete);
+
+// Image uploads - simple, inline handlers for utility functions
+router.post('/upload', upload.single('image'), optimizeImage, (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ error: 'No file uploaded' });
         }
         
-        // Send JSON response
-        res.setHeader('Content-Type', 'application/json');
-        
-        // Use the correct path format
-        const location = `/uploads/${req.file.filename}`;
-        res.json({
-            location: location
+        res.json({ 
+            url: `/uploads/${req.file.filename}`,
+            message: 'File uploaded and optimized successfully' 
         });
     } catch (error) {
-        console.error('Image upload error:', error);
-        res.status(500).json({
-            error: 'Failed to upload image'
-        });
+        console.error('Upload error:', error);
+        res.status(500).json({ error: error.message });
     }
 });
 
-// Newsletter routes
+// TinyMCE specific upload endpoint
+router.post('/upload-image', (req, res) => {
+    upload.single('file')(req, res, (err) => {
+        if (err) {
+            // Handle specific Multer errors
+            if (err instanceof multer.MulterError) {
+                if (err.code === 'LIMIT_FILE_SIZE') {
+                    return res.status(400).json({
+                        error: 'File is too large. Maximum size is 5MB'
+                    });
+                }
+            }
+            // Handle other errors
+            console.error('Upload error:', err);
+            return res.status(400).json({
+                error: err.message || 'Failed to upload file'
+            });
+        }
+
+        // No file uploaded
+        if (!req.file) {
+            return res.status(400).json({ 
+                error: 'No file uploaded' 
+            });
+        }
+
+        // Process image optimization
+        optimizeImage(req, res, (err) => {
+            if (err) {
+                console.error('Optimization error:', err);
+                return res.status(500).json({
+                    error: 'Failed to process image'
+                });
+            }
+
+            res.json({
+                location: `/uploads/${req.file.filename}`
+            });
+        });
+    });
+});
+
+// Newsletter management
 router.get('/newsletter', NewsletterController.adminListSubscribers);
-router.get('/newsletter/send', NewsletterController.adminSendNewsletterGet);
-router.post('/newsletter/send', NewsletterController.adminSendNewsletterPost);
+router.get('/newsletter/send', NewsletterController.showSendForm);
+router.post('/newsletter/send', NewsletterController.sendNewsletter);
+router.get('/newsletter/history', NewsletterController.listSentNewsletters);
 router.delete('/newsletter/subscribers/:id', NewsletterController.adminRemoveSubscriber);
 
 export default router;

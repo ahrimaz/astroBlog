@@ -3,17 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Send Newsletter</title>
+    <title><%= title %></title>
     <link href="/css/output.css" rel="stylesheet">
     <%- include('../../partials/tinymce') %>
 </head>
 <body class="bg-gray-50">
-    <nav class="bg-gray-800 text-white">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-            <h1 class="text-xl font-bold">Send Newsletter</h1>
-            <a href="/admin/newsletter" class="text-sm text-gray-300 hover:text-white">Back to Subscribers</a>
-        </div>
-    </nav>
+    <%- include('../../partials/admin-nav') %>
 
     <main class="max-w-4xl mx-auto px-4 py-8">
         <form id="newsletterForm" class="space-y-6 bg-white shadow rounded-lg p-6">
@@ -29,20 +24,16 @@
 
             <div>
                 <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
-                <textarea name="content" 
-                          id="content" 
-                          required
-                          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                </textarea>
+                <textarea id="content" name="content"></textarea>
             </div>
 
-            <div class="flex justify-end space-x-3">
+            <div class="flex justify-end space-x-4">
                 <a href="/admin/newsletter" 
-                   class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300">
+                   class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
                     Cancel
                 </a>
                 <button type="submit" 
-                        class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                     Send Newsletter
                 </button>
             </div>
@@ -52,36 +43,33 @@
     <script>
     document.getElementById('newsletterForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        
-        const formData = {
-            subject: document.getElementById('subject').value,
-            content: tinymce.get('content').getContent()
-        };
+        if (confirm('Are you sure you want to send this newsletter?')) {
+            try {
+                const content = tinymce.get('content').getContent();
+                const subject = e.target.subject.value;
 
-        if (!confirm('Are you sure you want to send this newsletter?')) {
-            return;
-        }
+                if (!content || !subject) {
+                    throw new Error('Subject and content are required');
+                }
 
-        try {
-            const response = await fetch('/admin/newsletter/send', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(formData)
-            });
+                const response = await fetch('/admin/newsletter/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ subject, content })
+                });
 
-            const data = await response.json();
-
-            if (response.ok) {
-                alert(data.message);
-                window.location.href = '/admin/newsletter';
-            } else {
-                alert(data.error || 'Failed to send newsletter');
+                if (response.ok) {
+                    alert('Newsletter sent successfully!');
+                    window.location.href = '/admin/newsletter';
+                } else {
+                    const data = await response.json();
+                    throw new Error(data.error || 'Failed to send newsletter');
+                }
+            } catch (error) {
+                alert(error.message);
             }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Failed to send newsletter');
         }
     });
     </script>

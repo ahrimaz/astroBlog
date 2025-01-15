@@ -1,125 +1,16 @@
 import Post from '../models/Post.js';
-import { deleteFile } from '../utils/storage.js';
 
 export default class PostController {
-    // Public routes
-    static async listPublished(req, res) {
+    // List all posts (admin view)
+    static async index(req, res) {
         try {
-            const posts = await Post.find({ isPublished: true })
-                .sort({ createdAt: -1 });
-            
-            // Add console.log to debug
-            console.log('Posts with previews:', posts.map(post => ({
-                title: post.title,
-                preview: post.getPreview()
-            })));
-
-            const postsWithPreviews = posts.map(post => ({
-                ...post.toObject(),
-                preview: post.getPreview()
-            }));
-
-            res.render('public/index', { 
-                title: 'Blog Posts',
-                posts: postsWithPreviews,
-                isAdmin: req.session.isAdmin
-            });
-        } catch (error) {
-            res.status(500).render('error', {
-                title: 'Error',
-                message: error.message
-            });
-        }
-    }
-
-    static async showPost(req, res) {
-        try {
-            const post = await Post.findOne({ slug: req.params.slug });
-            if (!post) {
-                return res.status(404).render('error', {
-                    title: 'Error',
-                    message: 'Post not found'
-                });
-            }
-
-            // Restore the original console log
-            console.log('Post data:', {
-                title: post.title,
-                images: post.images,
-                content: post.content.substring(0, 100) + '...'
-            });
-
-            res.render('public/post', {
-                title: post.title,
-                post: post
-            });
-        } catch (error) {
-            res.status(500).render('error', {
-                title: 'Error',
-                message: error.message
-            });
-        }
-    }
-
-    // Admin routes
-    static async createPost(req, res) {
-        try {
-            console.log('Creating post with data:', {
-                title: req.body.title,
-                images: req.body.images
-            });
-
-            const post = new Post({
-                title: req.body.title,
-                content: req.body.content,
-                slug: req.body.title.toLowerCase().replace(/[^a-zA-Z0-9]+/g, '-'),
-                isPublished: req.body.isPublished === 'on',
-                images: req.body.images ? req.body.images.split(',') : []
-            });
-
-            await post.save();
-            res.redirect('/admin/dashboard');
-        } catch (error) {
-            res.status(500).render('error', {
-                title: 'Error',
-                message: error.message
-            });
-        }
-    }
-
-    static async deletePost(req, res) {
-        try {
-            const post = await Post.findById(req.params.id);
-            
-            if (!post) {
-                return res.status(404).json({ error: 'Post not found' });
-            }
-
-            // Delete associated images
-            if (post.images?.length > 0) {
-                for (const imageUrl of post.images) {
-                    await deleteFile(imageUrl);
-                }
-            }
-
-            await Post.findByIdAndDelete(req.params.id);
-            res.json({ message: 'Post and associated images deleted successfully' });
-        } catch (error) {
-            console.error('Error deleting post:', error);
-            res.status(500).json({ error: error.message });
-        }
-    }
-
-    static async showDashboard(req, res) {
-        try {
-            const posts = await Post.find()
-                .sort({ createdAt: -1 });
-            
-            res.render('admin/dashboard', {
-                title: 'Admin Dashboard',
+            const posts = await Post.find().sort({ createdAt: -1 });
+            res.render('admin/posts/index', {
+                title: 'Posts Management',
                 posts
             });
         } catch (error) {
+            console.error('Error listing posts:', error);
             res.status(500).render('error', {
                 title: 'Error',
                 message: error.message
@@ -127,28 +18,83 @@ export default class PostController {
         }
     }
 
-    static showNewPostForm(req, res) {
-        res.render('admin/new-post', { 
-            title: 'New Post' 
+    // Show form to create new post
+    static async new(req, res) {
+        res.render('admin/posts/new', {
+            title: 'New Post'
         });
     }
 
-    static async showEditForm(req, res) {
+    // Create new post
+    static async create(req, res) {
         try {
+            const { title, content, isPublished } = req.body;
+            await Post.create({
+                title,
+                content,
+                slug: Post.generateSlug(title),
+                isPublished: !!isPublished
+            });
+            res.redirect('/admin/posts');
+        } catch (error) {
+            console.error('Error creating post:', error);
+            res.status(500).render('error', {
+                title: 'Error',
+                message: error.message
+            });
+        }
+    }
+
+    // Show form to edit post
+    static async edit(req, res) {
+        try {
+            const post = await Post.findById(req.params.id);
+            if (!post) {
+                return res.status(404).render('error', {
+                    title: 'Not Found',
+                    message: 'Post not found'
+                });
+            }
+            res.render('admin/posts/edit', {
+                title: 'Edit Post',
+                post
+            });
+        } catch (error) {
+            console.error('Error loading post:', error);
+            res.status(500).render('error', {
+                title: 'Error',
+                message: error.message
+            });
+        }
+    }
+
+    // Update post
+    static async update(req, res) {
+        try {
+            const { title, content, isPublished } = req.body;
             const post = await Post.findById(req.params.id);
             
             if (!post) {
                 return res.status(404).render('error', {
-                    title: 'Error',
+                    title: 'Not Found',
                     message: 'Post not found'
                 });
             }
 
-            res.render('admin/edit-post', { 
-                title: 'Edit Post',
-                post 
-            });
+            // If we're publishing for the first time, set publishedAt
+            if (isPublished && !post.isPublished && !post.publishedAt) {
+                post.publishedAt = new Date();
+            }
+
+            post.title = title;
+            post.content = content;
+            post.slug = Post.generateSlug(title);
+            post.isPublished = !!isPublished;
+
+            await post.save();
+            res.redirect('/admin/posts');
         } catch (error) {
+            console.error('Error updating post:', error);
             res.status(500).render('error', {
                 title: 'Error',
                 message: error.message
@@ -156,29 +102,59 @@ export default class PostController {
         }
     }
 
-    static async updatePost(req, res) {
+    // Delete post
+    static async delete(req, res) {
         try {
-            const post = await Post.findByIdAndUpdate(
-                req.params.id,
-                {
-                    title: req.body.title,
-                    content: req.body.content,
-                    slug: req.body.title.toLowerCase().replace(/[^a-zA-Z0-9]+/g, '-'),
-                    isPublished: req.body.isPublished === 'on',
-                    images: req.body.images ? req.body.images.split(',') : []
-                },
-                { new: true }
-            );
+            await Post.findByIdAndDelete(req.params.id);
+            res.json({ message: 'Post deleted successfully' });
+        } catch (error) {
+            console.error('Error deleting post:', error);
+            res.status(500).json({ 
+                error: error.message || 'Failed to delete post' 
+            });
+        }
+    }
+
+    // Add this method for the public home page
+    static async home(req, res) {
+        try {
+            const posts = await Post.find({ isPublished: true })
+                .sort({ createdAt: -1 })
+                .limit(10);  // Get latest 10 posts
+                
+            res.render('public/index', {
+                title: 'Blog Home',
+                posts
+            });
+        } catch (error) {
+            console.error('Error loading home page:', error);
+            res.status(500).render('error', {
+                title: 'Error',
+                message: error.message
+            });
+        }
+    }
+
+    static async show(req, res) {
+        try {
+            const post = await Post.findOne({ 
+                slug: req.params.slug,
+                isPublished: true 
+            });
 
             if (!post) {
                 return res.status(404).render('error', {
-                    title: 'Error',
+                    title: 'Not Found',
                     message: 'Post not found'
                 });
             }
 
-            res.redirect('/admin/dashboard');
+            res.render('public/post', {
+                title: post.title,
+                post
+            });
         } catch (error) {
+            console.error('Error showing post:', error);
             res.status(500).render('error', {
                 title: 'Error',
                 message: error.message
@@ -190,10 +166,15 @@ export default class PostController {
     static async apiListPosts(req, res) {
         try {
             const posts = await Post.find({ isPublished: true })
-                .sort({ createdAt: -1 });
+                .sort({ createdAt: -1 })
+                .select('title slug excerpt createdAt updatedAt');
+                
             res.json(posts);
         } catch (error) {
-            res.status(500).json({ error: error.message });
+            console.error('Error listing posts:', error);
+            res.status(500).json({ 
+                error: error.message || 'Failed to list posts' 
+            });
         }
     }
 
@@ -203,139 +184,80 @@ export default class PostController {
                 slug: req.params.slug,
                 isPublished: true 
             });
+
             if (!post) {
-                return res.status(404).json({ error: 'Post not found' });
+                return res.status(404).json({ 
+                    error: 'Post not found' 
+                });
             }
+
             res.json(post);
         } catch (error) {
-            res.status(500).json({ error: error.message });
+            console.error('Error getting post:', error);
+            res.status(500).json({ 
+                error: error.message || 'Failed to get post' 
+            });
         }
     }
 
     static async apiCreatePost(req, res) {
         try {
-            const post = new Post({
-                title: req.body.title,
-                content: req.body.content,
-                slug: req.body.title.toLowerCase().replace(/[^a-zA-Z0-9]/g, '-'),
-                isPublished: req.body.isPublished || false
+            const { title, content, isPublished } = req.body;
+            const post = await Post.create({
+                title,
+                content,
+                isPublished: !!isPublished
             });
-            await post.save();
             res.status(201).json(post);
         } catch (error) {
-            res.status(400).json({ error: error.message });
+            console.error('Error creating post:', error);
+            res.status(500).json({ 
+                error: error.message || 'Failed to create post' 
+            });
         }
     }
 
     static async apiUpdatePost(req, res) {
         try {
+            const { title, content, isPublished } = req.body;
             const post = await Post.findOneAndUpdate(
                 { slug: req.params.slug },
-                {
-                    title: req.body.title,
-                    content: req.body.content,
-                    isPublished: req.body.isPublished,
-                    ...(req.body.title && {
-                        slug: req.body.title.toLowerCase().replace(/[^a-zA-Z0-9]/g, '-')
-                    })
-                },
+                { title, content, isPublished: !!isPublished },
                 { new: true }
             );
 
             if (!post) {
-                return res.status(404).json({ error: 'Post not found' });
+                return res.status(404).json({ 
+                    error: 'Post not found' 
+                });
             }
+
             res.json(post);
         } catch (error) {
-            res.status(400).json({ error: error.message });
+            console.error('Error updating post:', error);
+            res.status(500).json({ 
+                error: error.message || 'Failed to update post' 
+            });
         }
     }
 
     static async apiDeletePost(req, res) {
         try {
-            const post = await Post.findOneAndDelete({ slug: req.params.slug });
+            const post = await Post.findOneAndDelete({ 
+                slug: req.params.slug 
+            });
+
             if (!post) {
-                return res.status(404).json({ error: 'Post not found' });
-            }
-            res.status(200).json({ message: 'Post deleted successfully' });
-        } catch (error) {
-            res.status(500).json({ error: error.message });
-        }
-    }
-
-    static async apiDebugListAllPosts(req, res) {
-        try {
-            const posts = await Post.find({});
-            res.json(posts);
-        } catch (error) {
-            res.status(500).json({ error: error.message });
-        }
-    }
-
-    static uploadMiddleware() {
-        return upload.single('image');
-    }
-
-    static async handleImageUpload(req, res) {
-        try {
-            if (!req.file) {
-                return res.status(400).json({ 
-                    error: 'No file uploaded' 
+                return res.status(404).json({ 
+                    error: 'Post not found' 
                 });
             }
 
-            console.log('Upload file details:', {
-                originalname: req.file.originalname,
-                mimetype: req.file.mimetype,
-                filename: req.file.filename
-            });
-            
-            const imageUrl = `/uploads/${req.file.filename}`;
-            console.log('Generated image URL:', imageUrl);
-            
-            res.json({ url: imageUrl });
+            res.json({ message: 'Post deleted successfully' });
         } catch (error) {
-            console.error('Upload error:', error);
+            console.error('Error deleting post:', error);
             res.status(500).json({ 
-                error: error.message 
-            });
-        }
-    }
-
-    static async removeImage(req, res) {
-        try {
-            const { imageUrl } = req.body;
-            
-            if (!imageUrl) {
-                return res.status(400).json({ 
-                    error: 'No image URL provided' 
-                });
-            }
-
-            await deleteFile(imageUrl);
-            res.json({ message: 'Image deleted successfully' });
-        } catch (error) {
-            console.error('Error deleting image:', error);
-            res.status(500).json({ 
-                error: error.message 
-            });
-        }
-    }
-
-    // Admin Web Methods
-    static async listAllPosts(req, res) {
-        try {
-            const posts = await Post.find()
-                .sort({ createdAt: -1 });
-            
-            res.render('admin/dashboard', {
-                title: 'Admin Dashboard',
-                posts
-            });
-        } catch (error) {
-            res.status(500).render('error', {
-                title: 'Error',
-                message: error.message
+                error: error.message || 'Failed to delete post' 
             });
         }
     }

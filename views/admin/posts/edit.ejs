@@ -7,14 +7,24 @@
     <link href="/css/output.css" rel="stylesheet">
 </head>
 <body class="bg-gray-50">
-    <nav class="bg-gray-800 text-white">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-            <h1 class="text-xl font-bold">Edit Post</h1>
-            <a href="/admin/dashboard" class="text-sm text-gray-300 hover:text-white">Back to Dashboard</a>
-        </div>
-    </nav>
+    <%- include('../../partials/admin-nav') %>
 
     <main class="max-w-4xl mx-auto px-4 py-8">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-xl font-bold">Edit Post</h1>
+            <div>
+                <% if (post.isPublished) { %>
+                    <span class="px-2 py-1 text-sm rounded-full bg-green-100 text-green-800">
+                        Published <%= new Date(post.publishedAt).toLocaleDateString() %>
+                    </span>
+                <% } else { %>
+                    <span class="px-2 py-1 text-sm rounded-full bg-yellow-100 text-yellow-800">
+                        Draft
+                    </span>
+                <% } %>
+            </div>
+        </div>
+
         <form action="/admin/posts/<%= post._id %>?_method=PUT" method="POST" class="space-y-6 bg-white shadow rounded-lg p-6">
             <div>
                 <label for="title" class="block text-sm font-medium text-gray-700 mb-2">Title</label>
@@ -38,26 +48,26 @@
                     <%= post.isPublished ? 'checked' : '' %>
                     class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                 <label for="isPublished" class="ml-2 block text-sm text-gray-900">
-                    Published
+                    <%= post.isPublished ? 'Keep Published' : 'Publish Now' %>
                 </label>
             </div>
 
             <input type="hidden" name="images" id="imageUrls" value="<%= post.images.join(',') %>">
 
-            <div class="flex justify-end">
+            <div class="flex justify-end space-x-4">
                 <a href="/admin/dashboard" 
-                    class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300 mr-4">
+                    class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-300">
                     Cancel
                 </a>
-                <button type="submit" 
+                <button type="submit" name="action" value="save"
                     class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
-                    Update Post
+                    <%= post.isPublished ? 'Update Post' : 'Save Draft' %>
                 </button>
             </div>
         </form>
     </main>
 
-    <%- include('../partials/tinymce') %>
+    <%- include('../../partials/tinymce') %>
 
 </body>
 </html> 

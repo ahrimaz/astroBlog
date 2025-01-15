@@ -27,30 +27,4 @@
     </form>
 </div>
 
-<script>
-document.getElementById('newsletter-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = e.target.email.value;
-    
-    try {
-        const response = await fetch('/api/newsletter/subscribe', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email })
-        });
-        
-        const data = await response.json();
-        
-        if (response.ok) {
-            alert('Thanks for subscribing! Please check your email to confirm.');
-            e.target.reset();
-        } else {
-            alert(data.error || 'Something went wrong');
-        }
-    } catch (error) {
-        alert('Failed to subscribe. Please try again.');
-    }
-});
-</script> 
+<script src="/js/newsletter.js"></script> 

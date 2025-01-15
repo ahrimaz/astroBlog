@@ -2,8 +2,8 @@
 
 import express from 'express';
 import PostController from '../controllers/postController.js';
-import adminAuth from '../middleware/adminAuth.js';
 import NewsletterController from '../controllers/NewsletterController.js';
+import adminAuth from '../middleware/adminAuth.js';
 
 const router = express.Router();
 
@@ -12,12 +12,10 @@ router.get('/posts', PostController.apiListPosts);
 router.get('/posts/:slug', PostController.apiGetPost);
 
 // Protected API endpoints
-router.post('/posts', adminAuth, PostController.apiCreatePost);
-router.put('/posts/:slug', adminAuth, PostController.apiUpdatePost);
-router.delete('/posts/:slug', adminAuth, PostController.apiDeletePost);
-
-// Debug endpoint
-router.get('/debug/posts', adminAuth, PostController.apiDebugListAllPosts);
+router.use('/posts', adminAuth);
+router.post('/posts', PostController.apiCreatePost);
+router.put('/posts/:slug', PostController.apiUpdatePost);
+router.delete('/posts/:slug', PostController.apiDeletePost);
 
 // Newsletter endpoints
 router.post('/newsletter/subscribe', NewsletterController.subscribe);

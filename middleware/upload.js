@@ -43,13 +43,21 @@ const optimizeImage = async (req, res, next) => {
         console.log('Starting image optimization...');
         
         const originalPath = req.file.path;
-        // Change extension to .webp
-        const tempPath = originalPath.replace(/\.[^.]+$/, '.webp');
+        const isGif = path.extname(originalPath).toLowerCase() === '.gif';
         
         // Get original file size
         const originalStats = await fs.stat(originalPath);
         console.log('Original file size:', (originalStats.size / 1024 / 1024).toFixed(2) + 'MB');
 
+        // Skip optimization for GIFs
+        if (isGif) {
+            console.log('GIF file detected - skipping optimization');
+            return next();
+        }
+
+        // Change extension to .webp for non-GIF files
+        const tempPath = originalPath.replace(/\.[^.]+$/, '.webp');
+        
         // Get metadata
         const metadata = await sharp(originalPath).metadata();
         console.log('Original dimensions:', `${metadata.width}x${metadata.height}`);
@@ -61,9 +69,9 @@ const optimizeImage = async (req, res, next) => {
                 fit: 'inside'
             })
             .webp({
-                quality: 75,     // WebP can maintain higher quality
-                effort: 4,       // 0-6, higher = better compression but slower
-                lossless: false  // Set to true for transparent images
+                quality: 75,
+                effort: 4,
+                lossless: false
             });
 
         // Use pipeline to handle streams
@@ -104,5 +112,4 @@ const optimizeImage = async (req, res, next) => {
     }
 };
 
-export default upload;
-export { optimizeImage }; 
+export { upload, optimizeImage }; 

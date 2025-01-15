@@ -1,9 +1,8 @@
-// Middleware to check if user is admin
-const adminAuth = (req, res, next) => {
+import Admin from '../models/Admin.js';
+
+export default async function adminAuth(req, res, next) {
     if (!req.session.isAdmin) {
-        return res.status(401).json({ error: 'Unauthorized' });
+        return res.redirect('/admin/login');
     }
     next();
-};
-
-export default adminAuth;
+}
