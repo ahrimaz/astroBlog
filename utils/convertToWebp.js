@@ -156,7 +156,7 @@ async function convertAllImages() {
             }
         }
 
-        // Add final cleanup step
+        // Final cleanup step
         await cleanupOldFiles();
 
         console.log('\nConversion and cleanup complete!');

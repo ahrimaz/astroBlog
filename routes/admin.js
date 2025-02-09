@@ -7,6 +7,7 @@ import { upload, optimizeImage } from '../middleware/upload.js';
 import adminAuth from '../middleware/adminAuth.js';
 import DashboardController from '../controllers/DashboardController.js';
 import multer from 'multer';
+import ComicBookController from '../controllers/ComicBookController.js';
 
 const router = express.Router();
 
@@ -42,7 +43,7 @@ router.get('/posts/:id/edit', PostController.edit);
 router.put('/posts/:id', PostController.update);
 router.delete('/posts/:id', PostController.delete);
 
-// Image uploads - simple, inline handlers for utility functions
+// Image uploads
 router.post('/upload', upload.single('image'), optimizeImage, (req, res) => {
     try {
         if (!req.file) {
@@ -63,7 +64,7 @@ router.post('/upload', upload.single('image'), optimizeImage, (req, res) => {
 router.post('/upload-image', (req, res) => {
     upload.single('file')(req, res, (err) => {
         if (err) {
-            // Handle specific Multer errors
+            // Handle Multer errors
             if (err instanceof multer.MulterError) {
                 if (err.code === 'LIMIT_FILE_SIZE') {
                     return res.status(400).json({
@@ -107,5 +108,19 @@ router.get('/newsletter/send', NewsletterController.showSendForm);
 router.post('/newsletter/send', NewsletterController.sendNewsletter);
 router.get('/newsletter/history', NewsletterController.listSentNewsletters);
 router.delete('/newsletter/subscribers/:id', NewsletterController.adminRemoveSubscriber);
+
+// Comic Book routes
+router.get('/comics', ComicBookController.adminIndex);
+router.get('/comics/new', (req, res) => res.render('admin/comics/new', { title: 'New Comic Book' }));
+router.post('/comics', upload.fields([
+    { name: 'coverImage', maxCount: 1 },
+    { name: 'gallery', maxCount: 10 }
+]), ComicBookController.create);
+router.get('/comics/:id/edit', ComicBookController.edit);
+router.put('/comics/:id', upload.fields([
+    { name: 'coverImage', maxCount: 1 },
+    { name: 'gallery', maxCount: 10 }
+]), ComicBookController.update);
+router.delete('/comics/:id', ComicBookController.delete);
 
 export default router;

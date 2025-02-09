@@ -115,7 +115,7 @@ export default class PostController {
         }
     }
 
-    // Add this method for the public home page
+    // Method for the public home page
     static async home(req, res) {
         try {
             const posts = await Post.find({ isPublished: true })

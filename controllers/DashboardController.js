@@ -7,7 +7,7 @@ export default class DashboardController {
         try {
             // Get all stats in parallel for better performance
             const [recentPosts, subscriberCount, totalPosts, publishedCount, recentNewsletters] = await Promise.all([
-                Post.find().sort({ createdAt: -1 }).limit(5),  // Only limit for recent posts
+                Post.find().sort({ createdAt: -1 }).limit(5),
                 Subscriber.countDocuments({ isVerified: true }),
                 Post.countDocuments(),  // Get total post count
                 Post.countDocuments({ isPublished: true }),

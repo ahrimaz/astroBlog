@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= comic.title %></title>
+    <link href="/css/output.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+    <main class="min-h-screen">
+        <!-- Hero Section with Cover Image Background -->
+        <div class="relative h-[35vh] bg-gray-900">
+            <div class="absolute inset-0 bg-cover bg-center opacity-20" style="background-image: url('<%= comic.coverImage %>')"></div>
+            
+            <!-- Content Overlay -->
+            <div class="relative h-full max-w-7xl mx-auto px-8 flex items-center">
+                <div class="w-full flex gap-12 items-end">
+                    <!-- Left Side: Cover Image and Preview Thumbnails -->
+                    <div class="flex gap-6">
+                        <!-- Cover Image -->
+                        <div class="w-[200px] h-[300px] -mb-20">
+                            <div id="imageContainer" class="relative h-full rounded-lg overflow-hidden shadow-2xl">
+                                <img id="mainImage" 
+                                     src="<%= comic.coverImage %>" 
+                                     alt="<%= comic.title %>" 
+                                     data-full="<%= comic.coverImage %>"
+                                     class="w-full h-full object-cover cursor-zoom-in">
+                            </div>
+                        </div>
+
+                        <!-- Preview Thumbnails -->
+                        <div class="flex flex-col gap-2 -mb-20">
+                            <% if (comic.gallery && comic.gallery.length > 0) { %>
+                                <p class="text-white text-sm mb-1">Preview Pages</p>
+                                <% comic.gallery.slice(0, 4).forEach((image, index) => { %>
+                                    <div class="preview-thumb w-16 h-24 rounded-lg overflow-hidden bg-gray-100 shadow-md">
+                                        <img src="<%= image %>" 
+                                             alt="Page <%= index + 1 %>" 
+                                             data-full="<%= image %>"
+                                             class="w-full h-full object-cover hover:opacity-75 transition-opacity cursor-zoom-in">
+                                    </div>
+                                <% }); %>
+                                <% if (comic.gallery.length > 4) { %>
+                                    <div class="text-white text-sm text-center">
+                                        +<%= comic.gallery.length - 4 %> more
+                                    </div>
+                                <% } %>
+                            <% } %>
+                        </div>
+                    </div>
+                    
+                    <!-- Title and Basic Info -->
+                    <div class="text-white pb-6">
+                        <h1 class="text-3xl font-bold mb-2"><%= comic.title %></h1>
+                        <p class="text-gray-300"><%= comic.publisher %> • <%= comic.publishYear %></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="max-w-7xl mx-auto px-8 pt-24 pb-8">
+            <div class="grid grid-cols-12 gap-8">
+                <!-- Left Column -->
+                <div class="col-span-8">
+                    <div class="prose max-w-none mb-6">
+                        <%- comic.description %>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="col-span-4 space-y-4">
+                    <!-- Creator Info -->
+                    <div class="bg-white rounded-xl p-4 shadow-sm">
+                        <h3 class="text-base font-medium text-gray-900 mb-3">Creator Details</h3>
+                        <div class="space-y-2 text-sm text-gray-700">
+                            <p><span class="font-medium">Writer:</span> <%= comic.writer %></p>
+                            <p><span class="font-medium">Artist:</span> <%= comic.artist %></p>
+                            <p><span class="font-medium">Pages:</span> <%= comic.gallery.length %></p>
+                        </div>
+                    </div>
+
+                    <!-- Purchase Options -->
+                    <div class="bg-white rounded-xl p-4 shadow-sm">
+                        <h3 class="text-base font-medium text-gray-900 mb-3">Purchase Options</h3>
+                        <div class="space-y-2">
+                            <button class="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                Purchase Digital
+                            </button>
+                            <button class="w-full py-2 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors">
+                                Purchase Print
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/js/lightbox.js"></script>
+</body>
+</html> 

@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 // Load environment variables
 dotenv.config();
 
-// Add this debug log (remove it later)
+// Debug log (remove it later)
 console.log('API Key length:', process.env.SENDGRID_API_KEY?.length);
 
 // Initialize SendGrid with API key

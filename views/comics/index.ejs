@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="/css/output.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 py-12">
+        <h1 class="text-4xl font-bold text-gray-900 mb-8">Comic Books & Illustrations</h1>
+
+        <% if (comics && comics.length > 0) { %>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <% comics.forEach(comic => { %>
+                    <article class="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                        <a href="/comics/<%= comic.slug %>" class="block">
+                            <div class="aspect-w-3 aspect-h-4">
+                                <img src="<%= comic.coverImage %>" 
+                                     alt="<%= comic.title %>"
+                                     class="w-full h-full object-cover">
+                            </div>
+                            <div class="p-6">
+                                <h2 class="text-xl font-semibold text-gray-900 mb-2">
+                                    <%= comic.title %>
+                                </h2>
+                                <p class="text-gray-600 line-clamp-3">
+                                    <%= comic.description %>
+                                </p>
+                            </div>
+                        </a>
+                    </article>
+                <% }); %>
+            </div>
+        <% } else { %>
+            <div class="text-center py-16 bg-white rounded-xl shadow-sm">
+                <h3 class="mt-2 text-sm font-medium text-gray-900">No comic books yet</h3>
+                <p class="mt-1 text-sm text-gray-500">
+                    Check back soon for new comic books and illustrations!
+                </p>
+                <% if (locals.isAdmin) { %>
+                    <div class="mt-6">
+                        <a href="/admin/comics/new" 
+                           class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                            <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                            </svg>
+                            Add New Comic Book
+                        </a>
+                    </div>
+                <% } %>
+            </div>
+        <% } %>
+    </div>
+</body>
+</html> 

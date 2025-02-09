@@ -33,7 +33,7 @@ const postSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// Add this pre-save middleware to set publishedAt
+// Pre-save middleware to set publishedAt
 postSchema.pre('save', function(next) {
     if (this.isModified('isPublished') && this.isPublished && !this.publishedAt) {
         this.publishedAt = new Date();
@@ -41,7 +41,7 @@ postSchema.pre('save', function(next) {
     next();
 });
 
-// Existing instance methods
+// Instance methods
 postSchema.methods = {
     getPreview(length = 200) {
         return this.content
@@ -89,7 +89,7 @@ postSchema.statics = {
             content: data.content,
             slug: this.generateSlug(data.title),
             isPublished: data.isPublished === 'on',
-            images: contentImages // Only store images that are actually in the content
+            images: contentImages // Store images that are actually in the content
         });
     },
 
@@ -106,13 +106,13 @@ postSchema.statics = {
                 content: data.content,
                 slug: this.generateSlug(data.title),
                 isPublished: data.isPublished === 'on',
-                images: contentImages // Only store images that are actually in the content
+                images: contentImages
             },
             { new: true }
         );
     },
 
-    // Generate slug (utility method)
+    // Generate slug
     generateSlug(title) {
         return title
             .toLowerCase()
@@ -120,7 +120,7 @@ postSchema.statics = {
             .replace(/^-|-$/g, '');
     },
 
-    // Add static method for deleting posts
+    // Static method for deleting posts
     deletePostById: async function(id) {
         try {
             const post = await this.findById(id);
@@ -135,7 +135,7 @@ postSchema.statics = {
     }
 };
 
-// Existing indexes
+// Indexes
 postSchema.index({ slug: 1, isPublished: 1 });
 postSchema.index({ createdAt: -1 });
 
